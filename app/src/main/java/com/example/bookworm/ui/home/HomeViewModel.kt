@@ -29,26 +29,26 @@ class HomeViewModel @Inject constructor(
         observeBooks()
     }
 
-    private fun seedIfEmpty(){
+    private fun seedIfEmpty() {
         viewModelScope.launch {
             val count = bookRepository.getBookCount()
-            if(count == 0){
+            if (count == 0) {
                 seeder.seed()
             }
         }
     }
 
-    private fun observeBooks(){
+    private fun observeBooks() {
         viewModelScope.launch {
             _currentStatus.collect { status ->
-                val flow = if (status == null){
+                val flow = if (status == null) {
                     bookRepository.observeAllBooks()
                 } else {
                     bookRepository.observeBookByStatus(status)
                 }
 
                 flow.collect { books ->
-                    _books.value = if (books.isEmpty()){
+                    _books.value = if (books.isEmpty()) {
                         UiState.Empty
                     } else {
                         UiState.Success(books)
@@ -57,6 +57,4 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-
-
 }

@@ -11,18 +11,23 @@ import com.example.bookworm.data.local.entity.BookAuthorCrossRef
 import com.example.bookworm.data.local.entity.BookGenreCrossRef
 import com.example.bookworm.data.local.entity.GenreEntity
 import com.example.bookworm.data.mapper.BookMapper
+import com.example.bookworm.data.mapper.RemoteBookMapper
+import com.example.bookworm.data.remote.api.ApiService
 import com.example.bookworm.domain.model.Book
 import com.example.bookworm.domain.model.BookStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class BookRepository @Inject constructor(
     private val bookDao: BookDao,
     private val authorDao: AuthorDao,
     private val genreDao: GenreDao,
     private val bookAuthorDao: BookAuthorDao,
-    private val bookGenreDao: BookGenreDao
+    private val bookGenreDao: BookGenreDao,
+    private val booksApi: ApiService
 ) {
     //Read
     fun observeAllBooks(): Flow<List<Book>> =
@@ -66,4 +71,22 @@ class BookRepository @Inject constructor(
 
     suspend fun deleteBook(bookId: String) =
         bookDao.delete(bookId)
+
+    suspend fun searchBooks(
+        query: String,
+        maxResults: Int = 20,
+        startIndex: Int = 0
+    ): Result<List<Book>> = runCatching {
+        val response = booksApi.searchBooks(
+            query = query,
+            maxResults = maxResults,
+            startIndex = startIndex
+        )
+        RemoteBookMapper.toDomainList(response.items?:emptyList())
+    }
+
+    suspend fun getBookById(bookId: String): Result<Book> = runCatching {
+        val dto = booksApi.getBookById(bookId)
+        RemoteBookMapper.toDomain(dto)
+    }
 }

@@ -5,6 +5,7 @@ import com.example.bookworm.data.local.dao.BookAuthorDao
 import com.example.bookworm.data.local.dao.BookDao
 import com.example.bookworm.data.local.dao.BookGenreDao
 import com.example.bookworm.data.local.dao.GenreDao
+import com.example.bookworm.data.remote.api.ApiService
 import com.example.bookworm.data.repository.BookRepository
 import dagger.Module
 import dagger.Provides
@@ -22,8 +23,9 @@ object RepositoryModule {
         authorDao: AuthorDao,
         genreDao: GenreDao,
         bookAuthorDao: BookAuthorDao,
-        bookGenreDao: BookGenreDao
+        bookGenreDao: BookGenreDao,
+        booksApi: ApiService
         ): BookRepository {
-        return BookRepository(bookDao, authorDao, genreDao, bookAuthorDao, bookGenreDao)
+        return BookRepository(bookDao, authorDao, genreDao, bookAuthorDao, bookGenreDao, booksApi)
     }
 }

@@ -2,7 +2,6 @@ package com.example.bookworm.data.mapper
 
 import com.example.bookworm.data.remote.dto.VolumeDto
 import com.example.bookworm.domain.model.Book
-import com.example.bookworm.domain.model.BookFormat
 import com.example.bookworm.domain.model.BookStatus
 import com.example.bookworm.domain.model.OwnershipStatus
 
@@ -23,7 +22,7 @@ object RemoteBookMapper {
             language = info.language?:"",
             //user fields
             status = BookStatus.TBR,
-            format = BookFormat.PHYSICAL,
+            ownedFormats = emptySet(),
             ownership = OwnershipStatus.WISHLIST,
             dateAddedToLibrary = System.currentTimeMillis(),
             dateStarted = null,

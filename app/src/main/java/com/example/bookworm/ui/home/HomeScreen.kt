@@ -86,7 +86,7 @@ private fun BookDebugCard(book: Book) {
                 style = MaterialTheme.typography.bodySmall
             )
             Text(
-                text = "Format: ${book.format}  |  Ownership: ${book.ownership}",
+                text = "Format: ${book.ownedFormats?.joinToString { ", " }}  |  Ownership: ${book.ownership}",
                 style = MaterialTheme.typography.bodySmall
             )
             Text(

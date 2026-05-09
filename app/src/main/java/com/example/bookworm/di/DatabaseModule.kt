@@ -7,6 +7,7 @@ import com.example.bookworm.data.local.dao.AuthorDao
 import com.example.bookworm.data.local.dao.BookAuthorDao
 import com.example.bookworm.data.local.dao.BookDao
 import com.example.bookworm.data.local.dao.BookGenreDao
+import com.example.bookworm.data.local.dao.FormatDao
 import com.example.bookworm.data.local.dao.GenreDao
 import dagger.Module
 import dagger.Provides
@@ -33,4 +34,5 @@ object DatabaseModule {
     @Provides fun provideGenreDao(db: BookWormDatabase): GenreDao = db.genreDao()
     @Provides fun provideBookAuthorDao(db: BookWormDatabase): BookAuthorDao = db.bookAuthorDao()
     @Provides fun provideBookGenreDao(db: BookWormDatabase): BookGenreDao = db.bookGenreDao()
+    @Provides fun provideFormatDao(db: BookWormDatabase): FormatDao = db.formatDao()
 }

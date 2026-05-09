@@ -3,6 +3,7 @@ package com.example.bookworm.data.local.entity
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
+import com.example.bookworm.domain.model.BookFormat
 
 data class BookWithDetails (
     @Embedded val book: BookEntity,
@@ -17,5 +18,10 @@ data class BookWithDetails (
         entityColumn = "genreId",
         associateBy = Junction(BookGenreCrossRef::class)
     )
-    val genres: List<GenreEntity>
+    val genres: List<GenreEntity>,
+    @Relation(
+        parentColumn = "bookId",
+        entityColumn = "format"
+    )
+    val formats: Set<FormatEntity>
 )

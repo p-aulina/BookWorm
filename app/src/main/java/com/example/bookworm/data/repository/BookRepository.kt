@@ -5,16 +5,20 @@ import com.example.bookworm.data.local.dao.AuthorDao
 import com.example.bookworm.data.local.dao.BookAuthorDao
 import com.example.bookworm.data.local.dao.BookDao
 import com.example.bookworm.data.local.dao.BookGenreDao
+import com.example.bookworm.data.local.dao.FormatDao
 import com.example.bookworm.data.local.dao.GenreDao
 import com.example.bookworm.data.local.entity.AuthorEntity
 import com.example.bookworm.data.local.entity.BookAuthorCrossRef
 import com.example.bookworm.data.local.entity.BookGenreCrossRef
+import com.example.bookworm.data.local.entity.FormatEntity
 import com.example.bookworm.data.local.entity.GenreEntity
 import com.example.bookworm.data.mapper.BookMapper
 import com.example.bookworm.data.mapper.RemoteBookMapper
 import com.example.bookworm.data.remote.api.ApiService
 import com.example.bookworm.domain.model.Book
+import com.example.bookworm.domain.model.BookFormat
 import com.example.bookworm.domain.model.BookStatus
+import com.example.bookworm.domain.model.OwnershipStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -25,6 +29,7 @@ class BookRepository @Inject constructor(
     private val bookDao: BookDao,
     private val authorDao: AuthorDao,
     private val genreDao: GenreDao,
+    private val formatDao: FormatDao,
     private val bookAuthorDao: BookAuthorDao,
     private val bookGenreDao: BookGenreDao,
     private val booksApi: ApiService
@@ -89,4 +94,10 @@ class BookRepository @Inject constructor(
         val dto = booksApi.getBookById(bookId)
         RemoteBookMapper.toDomain(dto)
     }
+
+    suspend fun updateOwnership(bookId: String, ownership: OwnershipStatus) =
+        bookDao.updateOwnership(bookId, ownership)
+
+    suspend fun upsertFormat(user: FormatEntity) =
+        formatDao.upsertFormat(user)
 }

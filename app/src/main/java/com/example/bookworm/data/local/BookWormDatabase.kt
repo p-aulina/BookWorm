@@ -8,11 +8,13 @@ import com.example.bookworm.data.local.dao.AuthorDao
 import com.example.bookworm.data.local.dao.BookAuthorDao
 import com.example.bookworm.data.local.dao.BookDao
 import com.example.bookworm.data.local.dao.BookGenreDao
+import com.example.bookworm.data.local.dao.FormatDao
 import com.example.bookworm.data.local.dao.GenreDao
 import com.example.bookworm.data.local.entity.AuthorEntity
 import com.example.bookworm.data.local.entity.BookAuthorCrossRef
 import com.example.bookworm.data.local.entity.BookEntity
 import com.example.bookworm.data.local.entity.BookGenreCrossRef
+import com.example.bookworm.data.local.entity.FormatEntity
 import com.example.bookworm.data.local.entity.GenreEntity
 
 @Database(
@@ -21,7 +23,8 @@ import com.example.bookworm.data.local.entity.GenreEntity
         AuthorEntity::class,
         GenreEntity::class,
         BookAuthorCrossRef::class,
-        BookGenreCrossRef::class
+        BookGenreCrossRef::class,
+        FormatEntity::class
     ],
     version = 1,
     exportSchema = false
@@ -33,4 +36,5 @@ abstract class BookWormDatabase : RoomDatabase(){
     abstract fun genreDao(): GenreDao
     abstract fun bookAuthorDao(): BookAuthorDao
     abstract fun bookGenreDao(): BookGenreDao
+    abstract fun formatDao(): FormatDao
 }

@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import com.example.bookworm.data.local.entity.BookEntity
 import com.example.bookworm.data.local.entity.BookWithDetails
+import com.example.bookworm.domain.model.BookFormat
 import com.example.bookworm.domain.model.BookStatus
 import com.example.bookworm.domain.model.OwnershipStatus
 import kotlinx.coroutines.flow.Flow
@@ -37,6 +38,10 @@ interface BookDao {
     @Query("UPDATE books SET status = :status WHERE bookId = :bookId")
     suspend fun updateStatus(bookId: String, status: BookStatus)
 
+    //UPDATE FORMAT
+//    @Query("UPDATE books SET format = :format WHERE bookId = :bookId")
+//    suspend fun updateFormat(bookId: String, format: BookFormat)
+
     //UPDATE OWNERSHIP
     @Query("UPDATE books SET ownership = :ownership WHERE bookId = :bookId")
     suspend fun updateOwnership(bookId: String, ownership: OwnershipStatus)
@@ -44,14 +49,6 @@ interface BookDao {
     //UPDATE - started reading
     @Query("UPDATE books SET dateStarted = :timestamp WHERE bookId = :bookId")
     suspend fun updateDateStarted(bookId: String, timestamp: Long)
-
-    //SEARCH
-//    @Query("""
-//        SELECT * FROM books
-//        WHERE title LIKE '%' || :query || '%'
-//        OR author like '%' || :query || '%'
-//    """)
-//    fun searchBooks(query: String): Flow<List<BookEntity>>
 
     //SELECT BY STATUS
     @Query("SELECT * FROM books WHERE status = :status")

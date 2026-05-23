@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.bookworm.ui.home.HomeScreen
+import com.example.bookworm.ui.library.LibraryScreen
 import com.example.bookworm.ui.search.SearchScreen
 import com.example.bookworm.ui.theme.BookWormTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,7 +25,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             BookWormTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    SearchScreen(modifier = Modifier.padding(innerPadding))
+                    LibraryScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
         }

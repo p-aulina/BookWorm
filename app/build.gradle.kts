@@ -95,4 +95,5 @@ dependencies {
 
     //API
     implementation(libs.okhttp.logging)
+    implementation(libs.coil)
 }

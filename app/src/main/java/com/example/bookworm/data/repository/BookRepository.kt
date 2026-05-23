@@ -100,4 +100,8 @@ class BookRepository @Inject constructor(
 
     suspend fun upsertFormat(user: FormatEntity) =
         formatDao.upsertFormat(user)
+
+    fun observeBooksByOwnership(ownership: OwnershipStatus): Flow<List<Book>> =
+        bookDao.observeBooksByOwnership(ownership)
+            .map { BookMapper.toDomainList(it) }
 }

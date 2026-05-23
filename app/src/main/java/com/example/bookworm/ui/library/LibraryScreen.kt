@@ -25,6 +25,7 @@ import com.example.bookworm.ui.UiState
 
 @Composable
 fun LibraryScreen(
+    onBookClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LibraryViewModel = hiltViewModel()
 ){
@@ -79,6 +80,7 @@ fun LibraryScreen(
                         ) { book ->
                             BookCard(
                                 book = book,
+                                onClick = { onBookClick(book.bookId)},
                                 onStatusChange = { newStatus ->
                                     viewModel.updateStatus(book.bookId, newStatus)
                                 },

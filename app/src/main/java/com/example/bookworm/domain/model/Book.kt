@@ -3,9 +3,9 @@ package com.example.bookworm.domain.model
 data class Book (
     val bookId: String,
     val title: String,
-    val author: List<String>?,
+    val author: List<String> = emptyList(),
     val pageCount: Int,
-    val genres: List<String>,
+    val genres: List<String> = emptyList(),
     val datePublished: String,
     val coverURL: String?,
     val description: String,

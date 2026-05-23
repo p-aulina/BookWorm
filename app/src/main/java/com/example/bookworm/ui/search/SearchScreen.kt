@@ -28,6 +28,7 @@ import com.example.bookworm.ui.UiState
 
 @Composable
 fun SearchScreen(
+    onBookClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
@@ -61,6 +62,7 @@ fun SearchScreen(
                         items(state.data) { book ->
                             SearchResultCard(
                                 book = book,
+                                onClick = { onBookClick(book.bookId) },
                                 isAdded = book.bookId in addedIds,
                                 onAddClick = { viewModel.addBookToLibrary(book) }
                             )
@@ -82,10 +84,12 @@ fun SearchScreen(
 @Composable
 private fun SearchResultCard(
     book: Book,
+    onClick: () -> Unit,
     isAdded: Boolean,
     onAddClick: () -> Unit
 ){
     Card(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 16.dp)

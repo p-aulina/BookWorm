@@ -96,4 +96,6 @@ dependencies {
     //API
     implementation(libs.okhttp.logging)
     implementation(libs.coil)
+    implementation(libs.navigation.compose)
+    implementation(libs.material.icons.extended)
 }

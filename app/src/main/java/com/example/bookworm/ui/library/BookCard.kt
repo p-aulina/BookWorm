@@ -45,6 +45,7 @@ import com.example.bookworm.domain.model.BookStatus
 @Composable
 fun BookCard(
     book: Book,
+    onClick: () -> Unit,
     onStatusChange: (BookStatus) -> Unit,
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -52,6 +53,7 @@ fun BookCard(
     var menuExpanded by remember { mutableStateOf(false) }
 
     Card(
+        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)

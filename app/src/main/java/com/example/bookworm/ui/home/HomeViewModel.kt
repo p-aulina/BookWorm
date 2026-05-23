@@ -9,8 +9,11 @@ import com.example.bookworm.ui.UiState
 import com.example.bookworm.utils.DatabaseSeeder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,42 +22,22 @@ class HomeViewModel @Inject constructor(
     private val bookRepository: BookRepository,
     private val seeder: DatabaseSeeder
 ): ViewModel() {
-    private val _books = MutableStateFlow<UiState<List<Book>>>(UiState.Loading)
-    val books: StateFlow<UiState<List<Book>>> = _books.asStateFlow()
-    private val _currentStatus = MutableStateFlow<BookStatus?>(null)
-    val currentStatus: StateFlow<BookStatus?> = _currentStatus.asStateFlow()
+
+    val currentlyReading: StateFlow<List<Book>> = bookRepository
+        .observeBookByStatus(BookStatus.READING)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val recentlyAdded: StateFlow<List<Book>> = bookRepository
+        .observeAllBooks()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         seedIfEmpty()
-        observeBooks()
     }
 
     private fun seedIfEmpty() {
         viewModelScope.launch {
-            val count = bookRepository.getBookCount()
-            if (count == 0) {
-                seeder.seed()
-            }
-        }
-    }
-
-    private fun observeBooks() {
-        viewModelScope.launch {
-            _currentStatus.collect { status ->
-                val flow = if (status == null) {
-                    bookRepository.observeAllBooks()
-                } else {
-                    bookRepository.observeBookByStatus(status)
-                }
-
-                flow.collect { books ->
-                    _books.value = if (books.isEmpty()) {
-                        UiState.Empty
-                    } else {
-                        UiState.Success(books)
-                    }
-                }
-            }
+            if (bookRepository.getBookCount() == 0) seeder.seed()
         }
     }
 }

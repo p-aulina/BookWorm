@@ -117,4 +117,7 @@ class BookRepository @Inject constructor(
 
     fun observeFormatsForBook(bookId: String): Flow<List<BookFormat>> =
         formatDao.observeFormatsForBook(bookId)
+
+    suspend fun updatePageProgress(bookId: String, page: Int) =
+        bookDao.updatePageProgress(bookId, page)
 }

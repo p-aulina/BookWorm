@@ -23,7 +23,7 @@ object BookMapper {
             dateStarted = bookWithDetails.book.dateStarted,
             dateFinished = bookWithDetails.book.dateFinished,
             dateLastUpdate = bookWithDetails.book.dateLastUpdate,
-            pageProgress = bookWithDetails.book.pageCount
+            pageProgress = bookWithDetails.book.pageProgress
         )
     }
 

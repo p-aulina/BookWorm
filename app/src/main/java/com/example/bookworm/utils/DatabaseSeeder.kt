@@ -29,7 +29,7 @@ class DatabaseSeeder @Inject constructor(
                 dateStarted = null,
                 dateFinished = null,
                 dateLastUpdate = System.currentTimeMillis(),
-                pageProgress = null
+                pageProgress = 0
             ),
             Book(
                 bookId = "test_002",
@@ -48,7 +48,7 @@ class DatabaseSeeder @Inject constructor(
                 dateStarted = System.currentTimeMillis(),
                 dateFinished = null,
                 dateLastUpdate = System.currentTimeMillis(),
-                pageProgress = null
+                pageProgress = 0
             )
         )
         testBooks.forEach { bookRepository.addBook(it) }

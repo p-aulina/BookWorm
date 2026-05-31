@@ -3,8 +3,11 @@ package com.example.bookworm.ui.detail
 import androidx.compose.runtime.snapshots.SnapshotId
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.bookworm.data.local.entity.AnnotationEntity
 import com.example.bookworm.data.local.entity.NoteEntity
+import com.example.bookworm.data.local.entity.NoteWithAnnotation
 import com.example.bookworm.data.local.entity.ReviewEntity
+import com.example.bookworm.data.repository.AnnotationRepository
 import com.example.bookworm.data.repository.BookRepository
 import com.example.bookworm.data.repository.NoteRepository
 import com.example.bookworm.data.repository.ReviewRepository
@@ -27,22 +30,23 @@ import javax.inject.Inject
 class BookDetailModel @Inject constructor(
     private val bookRepository: BookRepository,
     private val noteRepository: NoteRepository,
-    private val reviewRepository: ReviewRepository
+    private val reviewRepository: ReviewRepository,
+    private val annotationRepository: AnnotationRepository
 ): ViewModel() {
     private val _bookId = MutableStateFlow<String?>(null)
 
-    val book: StateFlow<UiState<Book>> = _bookId
-        .map { bookId ->
-            if(bookId == null) return@map UiState.Loading
-            bookRepository.observeBook(bookId)
-                .map { book ->
-                    if(book == null) UiState.Error("Book not found")
-                    else UiState.Success(book)
-                }
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
-                .value
-        }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
+//    val book: StateFlow<UiState<Book>> = _bookId
+//        .map { bookId ->
+//            if(bookId == null) return@map UiState.Loading
+//            bookRepository.observeBook(bookId)
+//                .map { book ->
+//                    if(book == null) UiState.Error("Book not found")
+//                    else UiState.Success(book)
+//                }
+//                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
+//                .value
+//        }
+//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
 
     private val _book = MutableStateFlow<UiState<Book>>(UiState.Loading)
     val bookState: StateFlow<UiState<Book>> = _book.asStateFlow()
@@ -55,9 +59,14 @@ class BookDetailModel @Inject constructor(
 //        .map { emptyList<NoteEntity>() }
 //        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private val _notes = MutableStateFlow<List<NoteEntity>>(emptyList())
-    val notesState: StateFlow<List<NoteEntity>> = _notes.asStateFlow()
+    private val _notes = MutableStateFlow<List<NoteWithAnnotation>>(emptyList())
+    val notesState: StateFlow<List<NoteWithAnnotation>> = _notes.asStateFlow()
 
+    val annotations: StateFlow<List<AnnotationEntity>> = annotationRepository.observeAll()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val _selectedAnnotation = MutableStateFlow<AnnotationEntity?>(null)
+    val selectedAnnotation: StateFlow<AnnotationEntity?> = _selectedAnnotation.asStateFlow()
     private val _review = MutableStateFlow<ReviewEntity?>(null)
     val reviewState: StateFlow<ReviewEntity?> = _review.asStateFlow()
 
@@ -70,14 +79,40 @@ class BookDetailModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            noteRepository.observeNotesForBook(bookId).collect { notes ->
-                _notes.value = notes
+            _selectedAnnotation.collect { annotation ->
+                val notesFlow = when {
+                    annotation == null -> noteRepository.observeNotesWithAnnotation(bookId)
+                    else -> noteRepository.observeNotesByAnnotation(bookId, annotation.annotationId)
+                }
+                notesFlow.collect { _notes.value = it }
             }
         }
         viewModelScope.launch {
             reviewRepository.observeReviewForBook(bookId).collect { review ->
                 _review.value = review
             }
+        }
+    }
+
+    fun selectAnnotationFilter(annotation: AnnotationEntity?) {
+        _selectedAnnotation.value = annotation
+    }
+
+    fun addNote(text: String, pageNr: Int?, annotationId: Long?) {
+        viewModelScope.launch {
+            _bookId.value?.let { noteRepository.addNote(it, text, pageNr, annotationId) }
+        }
+    }
+
+    fun createAnnotation(label: String, colorHex: String) {
+        viewModelScope.launch {
+            annotationRepository.createAnnotation(label, colorHex)
+        }
+    }
+
+    fun updatePageProgress(page: Int) {
+        viewModelScope.launch {
+            _bookId.value?.let { bookRepository.updatePageProgress(it, page) }
         }
     }
 

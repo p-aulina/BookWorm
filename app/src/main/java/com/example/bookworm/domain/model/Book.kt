@@ -15,7 +15,7 @@ data class Book (
     val dateStarted: Long?,
     val dateFinished: Long?,
     val dateLastUpdate: Long,
-    val pageProgress: Int?,
+    val pageProgress: Int = 0,
 
     val ownedFormats: Set<BookFormat> = emptySet(),
     val ownership: OwnershipStatus,

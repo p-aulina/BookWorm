@@ -57,6 +57,9 @@ interface BookDao {
     @Query("SELECT * FROM books WHERE ownership = :ownership")
     suspend fun getBookByOwnership(ownership: OwnershipStatus): List<BookEntity>
 
+    @Query("UPDATE books SET pageProgress = :page WHERE bookId = :bookId")
+    suspend fun updatePageProgress(bookId: String, page: Int)
+
     @Transaction
     @Query("SELECT * FROM books WHERE ownership = :ownership")
     fun observeBooksByOwnership(ownership: OwnershipStatus): Flow<List<BookWithDetails>>

@@ -1,5 +1,6 @@
 package com.example.bookworm.di
 
+import com.example.bookworm.data.local.dao.AnnotationDao
 import com.example.bookworm.data.local.dao.AuthorDao
 import com.example.bookworm.data.local.dao.BookAuthorDao
 import com.example.bookworm.data.local.dao.BookDao
@@ -9,6 +10,7 @@ import com.example.bookworm.data.local.dao.GenreDao
 import com.example.bookworm.data.local.dao.NoteDao
 import com.example.bookworm.data.local.dao.ReviewDao
 import com.example.bookworm.data.remote.api.ApiService
+import com.example.bookworm.data.repository.AnnotationRepository
 import com.example.bookworm.data.repository.BookRepository
 import com.example.bookworm.data.repository.NoteRepository
 import com.example.bookworm.data.repository.ReviewRepository
@@ -44,4 +46,9 @@ object RepositoryModule {
     @Singleton
     fun providesReviewRepository(reviewDao: ReviewDao): ReviewRepository =
         ReviewRepository(reviewDao)
+
+    @Provides
+    @Singleton
+    fun provideAnnotationRepository(annotationDao: AnnotationDao): AnnotationRepository =
+        AnnotationRepository(annotationDao)
 }

@@ -13,6 +13,7 @@ import com.example.bookworm.data.local.dao.FormatDao
 import com.example.bookworm.data.local.dao.GenreDao
 import com.example.bookworm.data.local.dao.NoteDao
 import com.example.bookworm.data.local.dao.ReviewDao
+import com.example.bookworm.data.local.dao.StatsDao
 import com.example.bookworm.data.local.entity.AnnotationEntity
 import com.example.bookworm.data.local.entity.AuthorEntity
 import com.example.bookworm.data.local.entity.BookAuthorCrossRef
@@ -50,4 +51,5 @@ abstract class BookWormDatabase : RoomDatabase(){
     abstract fun noteDao(): NoteDao
     abstract fun annotationDao(): AnnotationDao
     abstract fun reviewDao(): ReviewDao
+    abstract fun statsDao(): StatsDao
 }

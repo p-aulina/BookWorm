@@ -12,6 +12,7 @@ import com.example.bookworm.data.local.dao.FormatDao
 import com.example.bookworm.data.local.dao.GenreDao
 import com.example.bookworm.data.local.dao.NoteDao
 import com.example.bookworm.data.local.dao.ReviewDao
+import com.example.bookworm.data.local.dao.StatsDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,4 +42,5 @@ object DatabaseModule {
     @Provides fun providesNoteDao(db: BookWormDatabase): NoteDao = db.noteDao()
     @Provides fun providesReviewDao(db: BookWormDatabase): ReviewDao = db.reviewDao()
     @Provides fun providesAnnotationDao(db: BookWormDatabase): AnnotationDao = db.annotationDao()
+    @Provides fun providesStatsDao(db: BookWormDatabase): StatsDao = db.statsDao()
 }

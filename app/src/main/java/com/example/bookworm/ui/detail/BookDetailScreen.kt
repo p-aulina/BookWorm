@@ -1,5 +1,6 @@
 package com.example.bookworm.ui.detail
 
+import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -754,49 +755,69 @@ private fun PageProgressSection(
 ) {
     var pageText by remember(currentPage) { mutableStateOf(currentPage.toString()) }
     val isValid = pageText.toIntOrNull()?.let { it in 0..totalPages } == true
+    var isEditing by remember {mutableStateOf(currentPage == 0)}
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Text("Reading Progress", style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        Row (
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
-                value = pageText,
-                onValueChange = { pageText = it.filter { c -> c.isDigit() } },
-                label = { Text("Current page") },
-                suffix = { Text("/ $totalPages") },
-                isError = !isValid,
-                modifier = Modifier.width(160.dp),
-                singleLine = true
-            )
-            Button(
-                onClick = {
-                    pageText.toIntOrNull()?.let { onSave(it) }
-                },
-                enabled = isValid
-            ) {
-                Text("Save")
+            Text("Reading Progress", style = MaterialTheme.typography.titleMedium)
+            if(!isEditing){
+                TextButton(onClick = {isEditing = true}){
+                    Text("Edit")
+                }
             }
         }
-        if (totalPages > 0) {
+        if(totalPages > 0) {
             val progress = (currentPage.toFloat() / totalPages).coerceIn(0f, 1f)
+            Text(
+                text = "Page $currentPage of $totalPages · ${(progress * 100).toInt()}% complete",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Spacer(modifier = Modifier.height(6.dp))
             LinearProgressIndicator(
-                progress = { progress },
+                progress = {progress},
                 modifier = Modifier.fillMaxWidth()
             )
-            Text(
-                text = "${(progress * 100).toInt()}% complete",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 2.dp)
-            )
+        }
+
+        if(isEditing){
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = pageText,
+                    onValueChange = { pageText = it.filter { c -> c.isDigit() } },
+                    label = { Text("Current page") },
+                    suffix = { Text("/ $totalPages") },
+                    isError = !isValid,
+                    modifier = Modifier.width(160.dp),
+                    singleLine = true
+                )
+                Button(
+                    onClick = {
+                        pageText.toIntOrNull()?.let {
+                            onSave(it)
+                            isEditing = false
+                        }
+                    },
+                    enabled = isValid
+                ) {
+                    Text("Save")
+                }
+                TextButton(onClick = {isEditing = false}) {
+                    Text("Cancel")
+                }
+            }
         }
     }
 }

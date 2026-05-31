@@ -8,7 +8,6 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import com.example.bookworm.data.local.entity.BookEntity
 import com.example.bookworm.data.local.entity.BookWithDetails
-import com.example.bookworm.domain.model.BookFormat
 import com.example.bookworm.domain.model.BookStatus
 import com.example.bookworm.domain.model.OwnershipStatus
 import kotlinx.coroutines.flow.Flow

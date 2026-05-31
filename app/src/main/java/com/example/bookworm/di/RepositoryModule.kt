@@ -9,11 +9,13 @@ import com.example.bookworm.data.local.dao.FormatDao
 import com.example.bookworm.data.local.dao.GenreDao
 import com.example.bookworm.data.local.dao.NoteDao
 import com.example.bookworm.data.local.dao.ReviewDao
+import com.example.bookworm.data.local.dao.StatsDao
 import com.example.bookworm.data.remote.api.ApiService
 import com.example.bookworm.data.repository.AnnotationRepository
 import com.example.bookworm.data.repository.BookRepository
 import com.example.bookworm.data.repository.NoteRepository
 import com.example.bookworm.data.repository.ReviewRepository
+import com.example.bookworm.data.repository.StatsRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -51,4 +53,9 @@ object RepositoryModule {
     @Singleton
     fun provideAnnotationRepository(annotationDao: AnnotationDao): AnnotationRepository =
         AnnotationRepository(annotationDao)
+
+    @Provides
+    @Singleton
+    fun providesStatsRepository(statsDao: StatsDao): StatsRepository =
+        StatsRepository(statsDao)
 }

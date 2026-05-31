@@ -21,7 +21,7 @@ data class BookWithDetails (
     val genres: List<GenreEntity>,
     @Relation(
         parentColumn = "bookId",
-        entityColumn = "format"
+        entityColumn = "bookId"
     )
     val formats: Set<FormatEntity>
 )

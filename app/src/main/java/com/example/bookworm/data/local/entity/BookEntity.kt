@@ -24,7 +24,6 @@ data class BookEntity (
     val dateLastUpdate: Long = System.currentTimeMillis(),
     val pageProgress: Int = 0,
 
-    //val ownedFormats: Set<BookFormat>,
     val ownership: OwnershipStatus,
     val returnDate: Long? = null,
     val status: BookStatus = BookStatus.TBR

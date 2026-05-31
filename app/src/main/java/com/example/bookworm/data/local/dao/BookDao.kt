@@ -38,10 +38,6 @@ interface BookDao {
     @Query("UPDATE books SET status = :status WHERE bookId = :bookId")
     suspend fun updateStatus(bookId: String, status: BookStatus)
 
-    //UPDATE FORMAT
-//    @Query("UPDATE books SET format = :format WHERE bookId = :bookId")
-//    suspend fun updateFormat(bookId: String, format: BookFormat)
-
     //UPDATE OWNERSHIP
     @Query("UPDATE books SET ownership = :ownership WHERE bookId = :bookId")
     suspend fun updateOwnership(bookId: String, ownership: OwnershipStatus)

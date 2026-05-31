@@ -69,6 +69,10 @@ class BookRepository @Inject constructor(
         bookGenreDao.insertAll(
             genreIds.map { BookGenreCrossRef(book.bookId, it) }
         )
+
+        book.ownedFormats.forEach { format ->
+            formatDao.insert(FormatEntity(bookId = book.bookId, format = format))
+        }
     }
 
     suspend fun updateStatus(bookId: String, status: BookStatus) =
@@ -104,4 +108,13 @@ class BookRepository @Inject constructor(
     fun observeBooksByOwnership(ownership: OwnershipStatus): Flow<List<Book>> =
         bookDao.observeBooksByOwnership(ownership)
             .map { BookMapper.toDomainList(it) }
+
+    suspend fun addFormat(bookId: String, format: BookFormat) =
+        formatDao.insert(FormatEntity(bookId = bookId, format = format))
+
+    suspend fun removeFormat(bookId: String, format: BookFormat) =
+        formatDao.delete(FormatEntity(bookId = bookId, format = format))
+
+    fun observeFormatsForBook(bookId: String): Flow<List<BookFormat>> =
+        formatDao.observeFormatsForBook(bookId)
 }

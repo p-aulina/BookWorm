@@ -7,6 +7,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.bookworm.ui.detail.BookDetailScreen
 import com.example.bookworm.ui.home.HomeScreen
 import com.example.bookworm.ui.library.LibraryScreen
 import com.example.bookworm.ui.search.SearchScreen
@@ -59,10 +60,14 @@ fun NavGraph(
                 navArgument("bookId") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val bookId = backStackEntry.arguments?.getString("bookId") ?: return@composable
-            // BookDetailScreen(bookId = bookId, onBack = { navController.popBackStack() })
-            // placeholder until BookDetailScreen is built:
-            androidx.compose.material3.Text("Detail for book: $bookId")
+            val bookId = backStackEntry.arguments?.getString("bookId")
+                ?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+                ?: return@composable
+
+            BookDetailScreen(
+                bookId = bookId,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

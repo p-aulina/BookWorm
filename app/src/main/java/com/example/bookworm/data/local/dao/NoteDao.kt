@@ -22,6 +22,9 @@ interface NoteDao {
     @Delete
     suspend fun delete(note: NoteEntity)
 
+    @Query("UPDATE note SET text = :text, pageNr = :pageNr WHERE noteId = :noteId")
+    suspend fun updateNote(noteId: Long, text: String, pageNr: Int?)
+
     @Query("SELECT * FROM note WHERE bookId = :bookId ORDER BY timestamp DESC")
     fun observeNotesForBook(bookId: String): Flow<List<NoteEntity>>
 

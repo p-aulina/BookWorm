@@ -17,4 +17,7 @@ interface ReviewDao {
 
     @Query("DELETE FROM review WHERE bookId = :bookId")
     suspend fun deleteForBook(bookId: String)
+
+    @Query("UPDATE review SET rating = :rating, text = :text WHERE bookId = :bookId")
+    suspend fun updateReview(bookId: String, rating: Float, text: String?)
 }

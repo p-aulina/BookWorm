@@ -26,4 +26,7 @@ class ReviewRepository @Inject constructor(
 
     suspend fun deleteReview(bookId: String) =
         reviewDao.deleteForBook(bookId)
+
+    suspend fun updateReview(bookId: String, rating: Float, text: String?) =
+        reviewDao.updateReview(bookId, rating, text)
 }

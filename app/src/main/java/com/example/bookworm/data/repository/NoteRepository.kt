@@ -40,6 +40,9 @@ class NoteRepository @Inject constructor(
         )
     }
 
+    suspend fun updateNote(noteId: Long, text: String, pageNr: Int?) =
+        noteDao.updateNote(noteId, text, pageNr)
+
     fun observeNotesForBook(bookId: String): Flow<List<NoteEntity>> =
         noteDao.observeNotesForBook(bookId)
 

@@ -132,6 +132,12 @@ class BookDetailModel @Inject constructor(
         }
     }
 
+    fun updateNote(noteId: Long, text: String, pageNr: Int?) {
+        viewModelScope.launch {
+            noteRepository.updateNote(noteId, text, pageNr)
+        }
+    }
+
     fun updatePageCount(count: Int) {
         viewModelScope.launch {
             _bookId.value?.let { bookRepository.updatePageCount(it, count) }
@@ -141,6 +147,12 @@ class BookDetailModel @Inject constructor(
     fun updateStatus(status: BookStatus){
         viewModelScope.launch {
             _bookId.value?.let { bookRepository.updateStatus(it, status) }
+        }
+    }
+
+    fun updateReview(rating: Float, text: String?) {
+        viewModelScope.launch {
+            _bookId.value?.let { reviewRepository.updateReview(it, rating, text) }
         }
     }
 

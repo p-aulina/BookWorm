@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
@@ -95,6 +96,8 @@ fun BookDetailScreen(
     var showNoteDialog by remember { mutableStateOf(false) }
     var showReviewDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var noteToEdit by remember { mutableStateOf<NoteEntity?>(null) }
+    var showEditReviewDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -178,6 +181,7 @@ fun BookDetailScreen(
                             review = review,
                             bookStatus = book.status,
                             onAddReviewClick = { showReviewDialog = true },
+                            onEditReviewClick = { showEditReviewDialog = true },
                             onDeleteReview = viewModel::deleteReview
                         )
                     }
@@ -222,7 +226,8 @@ fun BookDetailScreen(
                             NoteCard(
                                 note = noteWithAnnotation.note,
                                 annotation = noteWithAnnotation.annotation,
-                                onDelete = { viewModel.deleteNote(noteWithAnnotation.note) }
+                                onDelete = { viewModel.deleteNote(noteWithAnnotation.note) },
+                                        onEdit = { noteToEdit = it }
                             )
                         }
                     }
@@ -274,6 +279,29 @@ fun BookDetailScreen(
                 TextButton(onClick = { showDeleteConfirm = false }){
                     Text("Cancel")
                 }
+            }
+        )
+    }
+    noteToEdit?.let { note ->
+        EditNoteDialog(
+            note = note,
+            annotations = annotations,
+            pageCount = (bookState as? UiState.Success)?.data?.pageCount ?: 0,
+            onDismiss = { noteToEdit = null },
+            onConfirm = { noteId, text, pageNr ->
+                viewModel.updateNote(noteId, text, pageNr)
+                noteToEdit = null
+            }
+        )
+    }
+    val currentReview = review
+    if (showEditReviewDialog && currentReview != null) {
+        EditReviewDialog(
+            review = currentReview,
+            onDismiss = { showEditReviewDialog = false },
+            onConfirm = { rating, text ->
+                viewModel.updateReview(rating, text)
+                showEditReviewDialog = false
             }
         )
     }
@@ -450,6 +478,7 @@ private fun ReviewSection(
     review: ReviewEntity?,
     bookStatus: BookStatus,
     onAddReviewClick: () -> Unit,
+    onEditReviewClick: () -> Unit,
     onDeleteReview: () -> Unit
 ) {
     val canReview = bookStatus == BookStatus.FINISHED || bookStatus == BookStatus.DNF
@@ -466,9 +495,21 @@ private fun ReviewSection(
         ) {
             Text("My Review", style = MaterialTheme.typography.titleMedium)
             when {
-                review != null -> IconButton(onClick = onDeleteReview) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete review",
-                        tint = MaterialTheme.colorScheme.error)
+                review != null -> Row {
+                    IconButton(onClick = onEditReviewClick) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Edit review",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    IconButton(onClick = onDeleteReview) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete review",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
                 canReview -> TextButton(onClick = onAddReviewClick) {
                     Text("+ Add Review")
@@ -514,10 +555,67 @@ private fun ReviewSection(
 }
 
 @Composable
+private fun EditReviewDialog(
+    review: ReviewEntity,
+    onDismiss: () -> Unit,
+    onConfirm: (rating: Float, text: String?) -> Unit
+) {
+    var rating by remember { mutableStateOf(review.rating.toInt()) }
+    var text by remember { mutableStateOf(review.text ?: "") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Review") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Rating", style = MaterialTheme.typography.labelMedium)
+                Row {
+                    repeat(5) { index ->
+                        IconButton(onClick = { rating = index + 1 }) {
+                            Icon(
+                                imageVector = if (index < rating)
+                                    Icons.Default.Star else Icons.Outlined.StarOutline,
+                                contentDescription = "${index + 1} stars",
+                                tint = if (index < rating)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("Your review (optional)") },
+                    minLines = 4,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (rating > 0) {
+                        onConfirm(rating.toFloat(), text.trim().ifBlank { null })
+                    }
+                },
+                enabled = rating > 0
+            ) { Text("Save") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
+}
+
+@Composable
 private fun NoteCard(
     note: NoteEntity,
     annotation: AnnotationEntity?,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onEdit: (NoteEntity) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -571,19 +669,96 @@ private fun NoteCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(24.dp)
-            ) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Delete note",
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Row {
+                IconButton(
+                    onClick = { onEdit(note) },
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = "Edit note",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete note",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+private fun EditNoteDialog(
+    note: NoteEntity,
+    annotations: List<AnnotationEntity>,
+    pageCount: Int,
+    onDismiss: () -> Unit,
+    onConfirm: (noteId: Long, text: String, pageNr: Int?) -> Unit
+) {
+    var text by remember { mutableStateOf(note.text) }
+    var pageText by remember { mutableStateOf(note.pageNr?.toString() ?: "") }
+
+    val pageNumber = pageText.toIntOrNull()
+    val pageError = when {
+        pageText.isBlank() -> null
+        pageNumber == null -> "Must be a number"
+        pageCount > 0 && pageNumber > pageCount -> "Book only has $pageCount pages"
+        pageNumber < 1 -> "Page must be at least 1"
+        else -> null
+    }
+    val isPageValid = pageError == null
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Note") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("Note") },
+                    minLines = 3,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = pageText,
+                    onValueChange = { pageText = it.filter { c -> c.isDigit() } },
+                    label = { Text("Page number (optional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    isError = !isPageValid,
+                    supportingText = if (pageError != null) {
+                        { Text(pageError, color = MaterialTheme.colorScheme.error) }
+                    } else if (pageCount > 0) {
+                        { Text("1 – $pageCount") }
+                    } else null
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (text.isNotBlank() && isPageValid) {
+                        onConfirm(note.noteId, text.trim(), pageNumber)
+                    }
+                },
+                enabled = text.isNotBlank() && isPageValid
+            ) { Text("Save") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
 }
 
 @Composable

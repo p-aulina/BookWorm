@@ -46,6 +46,7 @@ okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor",
 coil = { group = "io.coil-kt", name = "coil-compose", version = "2.6.0" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version = "0.34.0" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

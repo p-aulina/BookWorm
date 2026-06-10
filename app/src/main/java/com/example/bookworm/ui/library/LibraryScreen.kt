@@ -3,6 +3,7 @@ package com.example.bookworm.ui.library
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,12 +34,14 @@ fun LibraryScreen(
     val bookState by viewModel.books.collectAsStateWithLifecycle()
 
     Column(modifier = modifier.fillMaxSize()) {
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        FlowRow (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            items(ShelfTab.entries) { shelf ->
+            ShelfTab.entries.forEach { shelf ->
                 FilterChip(
                     selected = shelf == selectedShelf,
                     onClick = { viewModel.selectShelf(shelf) },

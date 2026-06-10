@@ -1,6 +1,5 @@
 package com.example.bookworm.ui.detail
 
-import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,9 +24,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -38,6 +39,8 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -81,6 +84,8 @@ fun BookDetailScreen(
         viewModel.loadBook(bookId)
     }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     val bookState by viewModel.bookState.collectAsStateWithLifecycle()
     val notes by viewModel.notesState.collectAsStateWithLifecycle()
     val review by viewModel.reviewState.collectAsStateWithLifecycle()
@@ -91,7 +96,19 @@ fun BookDetailScreen(
     var showReviewDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is BookDetailModel.DetailEvent.BookFinished ->
+                    snackbarHostState.showSnackbar(
+                        "Congratulations! You finished this book!"
+                    )
+            }
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("BookDetail") },
@@ -134,6 +151,9 @@ fun BookDetailScreen(
                     contentPadding = PaddingValues(bottom = 32.dp)
                 ) {
                     item { BookHeader(book = book) }
+                    if(book.pageCount == 0){
+                        item{ MissingPageCountSection(onSave = viewModel::updatePageCount) }
+                    }
                     if(book.status == BookStatus.READING) {
                         item{PageProgressSection(
                             currentPage = book.pageProgress,
@@ -166,7 +186,8 @@ fun BookDetailScreen(
                         AnnotationFilterRow(
                             annotations = annotations,
                             selected = selectedAnnotation,
-                            onSelect = viewModel::selectAnnotationFilter
+                            onSelect = viewModel::selectAnnotationFilter,
+                            hasNotes = notes.isNotEmpty()
                         )
                     }
 
@@ -213,6 +234,7 @@ fun BookDetailScreen(
     if (showNoteDialog) {
         AddNoteDialog(
             annotations = annotations,
+            pageCount = (bookState as? UiState.Success)?.data?.pageCount ?:0,
             onDismiss = { showNoteDialog = false },
             onConfirm = { text, page, annotationId ->
                 viewModel.addNote(text, page, annotationId)
@@ -328,10 +350,10 @@ private fun BookMetaSection(
         HorizontalDivider()
         PickerRow(
             label = "Status",
-            options = BookStatus.entries.map { it.name },
-            selected = book.status.name,
-            onSelect = { name ->
-                onStatusChange(BookStatus.valueOf(name))
+            options = BookStatus.entries.map { it.label },
+            selected = book.status.label,
+            onSelect = { label ->
+                onStatusChange(BookStatus.entries.first{ it.label == label })
             }
         )
         Column {
@@ -567,6 +589,7 @@ private fun NoteCard(
 @Composable
 private fun AddNoteDialog(
     annotations: List<AnnotationEntity>,
+    pageCount: Int,
     onDismiss: () -> Unit,
     onConfirm: (text: String, page: Int?, annotationId: Long?) -> Unit,
     onCreateAnnotation: (label: String, colorHex: String) -> Unit
@@ -577,6 +600,18 @@ private fun AddNoteDialog(
     var showNewAnnotationRow by remember { mutableStateOf(false) }
     var newLabel by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf("#FFB300") }
+
+    val pageNumber = pageText.toIntOrNull()
+    val pageError = when {
+        pageText.isBlank() -> null
+        pageNumber?.let { pageCount > 0 && it > pageCount } == true ->
+            "Book only has $pageCount pages"
+        pageNumber?.let { it < 1 } == true ->
+            "Page must be at least 1"
+        else -> null
+    }
+
+    val isPageValid = pageError == null
 
     val colorOptions = listOf(
         "#FFB300" to "Amber",
@@ -603,7 +638,13 @@ private fun AddNoteDialog(
                     onValueChange = { pageText = it.filter { c -> c.isDigit() } },
                     label = { Text("Page number (optional)") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    isError = !isPageValid,
+                    supportingText = if (pageError != null){
+                        { Text(pageError, color = MaterialTheme.colorScheme.error) }
+                    } else if (pageCount > 0){
+                        { Text("1 - $pageCount") }
+                    } else null
                 )
 
                 // annotation picker
@@ -686,10 +727,11 @@ private fun AddNoteDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (text.isNotBlank()) {
-                        onConfirm(text.trim(), pageText.toIntOrNull(), selectedAnnotation?.annotationId)
+                    if (text.isNotBlank() && isPageValid) {
+                        onConfirm(text.trim(), pageNumber, selectedAnnotation?.annotationId)
                     }
-                }
+                },
+                enabled = text.isNotBlank() && isPageValid
             ) { Text("Save") }
         },
         dismissButton = {
@@ -715,10 +757,12 @@ private fun AddReviewDialog(
                     repeat(5){ index ->
                         IconButton(onClick = {rating = index + 1}) {
                             Icon(
-                                imageVector = Icons.Default.Star,
+                                imageVector = if (index < rating) Icons.Default.Star
+                                            else Icons.Outlined.StarOutline,
                                 contentDescription = "${index + 1} stars",
                                 tint = if(index < rating) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.surfaceVariant
+                                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                modifier = Modifier.size(36.dp)
                             )
                         }
                     }
@@ -826,9 +870,10 @@ private fun PageProgressSection(
 private fun AnnotationFilterRow(
     annotations: List<AnnotationEntity>,
     selected: AnnotationEntity?,
-    onSelect: (AnnotationEntity?) -> Unit
+    onSelect: (AnnotationEntity?) -> Unit,
+    hasNotes: Boolean
 ) {
-    if (annotations.isEmpty()) return
+    if (!hasNotes) return
 
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -841,7 +886,6 @@ private fun AnnotationFilterRow(
         )
         Spacer(modifier = Modifier.height(4.dp))
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            // "All" chip
             item {
                 FilterChip(
                     selected = selected == null,
@@ -849,7 +893,7 @@ private fun AnnotationFilterRow(
                     label = { Text("All") }
                 )
             }
-            items(annotations) { annotation ->
+            items(annotations, key = { it.annotationId }) { annotation ->
                 FilterChip(
                     selected = annotation == selected,
                     onClick = { onSelect(annotation) },
@@ -865,6 +909,67 @@ private fun AnnotationFilterRow(
                         )
                     }
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MissingPageCountSection(onSave: (Int) -> Unit){
+    var editing by remember { mutableStateOf(false) }
+    var input by remember { mutableStateOf("") }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                "Page count unavaliable",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Text(
+                "Add page count manually to enable progress tracking",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            if(editing) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = input,
+                        onValueChange = { input = it.filter { c -> c.isDigit() }},
+                        label = { Text("Page count") },
+                        singleLine = true,
+                        modifier = Modifier.width(140.dp)
+                    )
+                    Button(
+                        onClick = {
+                            input.toIntOrNull()?.let{
+                                if(it > 0){
+                                    onSave(it)
+                                    editing = false
+                                }
+                            }
+                        },
+                        enabled = input.toIntOrNull()?.let { it > 0 } == true
+                    ) { Text("Save") }
+                    TextButton(onClick = { editing = false }) {
+                        Text("Cancel")
+                    }
+                }
+            } else {
+                TextButton(onClick = {editing = true}) {
+                    Text("+ Add page count")
+                }
             }
         }
     }

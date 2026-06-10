@@ -34,6 +34,7 @@ interface StatsDao {
         SELECT COUNT(*) FROM books
         WHERE status = 'FINISHED'
         AND dateFinished >= :startOfYear
+        AND dateFinished IS NOT NULL
     """)
     fun observeBooksReadThisYear(startOfYear: Long): Flow<Int>
 

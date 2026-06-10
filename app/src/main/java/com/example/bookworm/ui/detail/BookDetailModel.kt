@@ -1,6 +1,5 @@
 package com.example.bookworm.ui.detail
 
-import androidx.compose.runtime.snapshots.SnapshotId
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookworm.data.local.entity.AnnotationEntity
@@ -17,11 +16,14 @@ import com.example.bookworm.domain.model.BookStatus
 import com.example.bookworm.domain.model.OwnershipStatus
 import com.example.bookworm.ui.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -70,6 +72,13 @@ class BookDetailModel @Inject constructor(
     private val _review = MutableStateFlow<ReviewEntity?>(null)
     val reviewState: StateFlow<ReviewEntity?> = _review.asStateFlow()
 
+    private val _events = MutableSharedFlow<DetailEvent>()
+    val events: SharedFlow<DetailEvent> = _events.asSharedFlow()
+
+    sealed class DetailEvent{
+        object BookFinished: DetailEvent()
+    }
+
     fun loadBook(bookId: String){
         _bookId.value = bookId
         viewModelScope.launch {
@@ -79,13 +88,12 @@ class BookDetailModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            _selectedAnnotation.collect { annotation ->
-                val notesFlow = when {
-                    annotation == null -> noteRepository.observeNotesWithAnnotation(bookId)
+            _selectedAnnotation.flatMapLatest { annotation ->
+                when (annotation){
+                    null -> noteRepository.observeNotesWithAnnotation(bookId)
                     else -> noteRepository.observeNotesByAnnotation(bookId, annotation.annotationId)
                 }
-                notesFlow.collect { _notes.value = it }
-            }
+            }.collect { _notes.value = it }
         }
         viewModelScope.launch {
             reviewRepository.observeReviewForBook(bookId).collect { review ->
@@ -112,7 +120,21 @@ class BookDetailModel @Inject constructor(
 
     fun updatePageProgress(page: Int) {
         viewModelScope.launch {
-            _bookId.value?.let { bookRepository.updatePageProgress(it, page) }
+            val bookId = _bookId.value ?: return@launch
+            val book = (_book.value as? UiState.Success)?.data ?: return@launch
+
+            bookRepository.updatePageProgress(bookId, page)
+
+            if (book.pageCount > 0 && page >= book.pageCount) {
+                bookRepository.updateStatus(bookId, BookStatus.FINISHED)
+                _events.emit(DetailEvent.BookFinished)
+            }
+        }
+    }
+
+    fun updatePageCount(count: Int) {
+        viewModelScope.launch {
+            _bookId.value?.let { bookRepository.updatePageCount(it, count) }
         }
     }
 

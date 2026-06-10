@@ -105,7 +105,7 @@ private fun OverviewSection(overview: OverviewStats){
                 MaterialTheme.colorScheme.secondaryContainer, Modifier.weight(1f))
             StatusTile("To Read", overview.booksTbr,
                 MaterialTheme.colorScheme.tertiaryContainer, Modifier.weight(1f))
-            StatusTile("DNF", overview.booksDnf,
+            StatusTile("Did Not Finished", overview.booksDnf,
                 MaterialTheme.colorScheme.errorContainer, Modifier.weight(1f))
         }
         if (overview.averageRating > 0f) {

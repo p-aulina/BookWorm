@@ -76,7 +76,7 @@ class BookRepository @Inject constructor(
     }
 
     suspend fun updateStatus(bookId: String, status: BookStatus) =
-        bookDao.updateStatus(bookId, status)
+        bookDao.updateStatus(bookId, status, System.currentTimeMillis())
 
     suspend fun deleteBook(bookId: String) =
         bookDao.delete(bookId)
@@ -120,4 +120,7 @@ class BookRepository @Inject constructor(
 
     suspend fun updatePageProgress(bookId: String, page: Int) =
         bookDao.updatePageProgress(bookId, page)
+
+    suspend fun updatePageCount(bookId: String, count: Int) =
+        bookDao.updatePageCount(bookId, count)
 }

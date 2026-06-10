@@ -34,8 +34,14 @@ interface BookDao {
     suspend fun getBookById(bookId: String): BookEntity?
 
     //UPDATE READING STATUS
-    @Query("UPDATE books SET status = :status WHERE bookId = :bookId")
-    suspend fun updateStatus(bookId: String, status: BookStatus)
+    @Query("""
+        UPDATE books SET
+            status = :status,
+            dateFinished = CASE WHEN :status = 'FINISHED' THEN :timestamp ELSE dateFinished END,
+            dateStarted = CASE WHEN :status = 'READING' AND dateStarted IS NULL THEN :timestamp ELSE dateStarted END
+        WHERE bookId = :bookId
+    """)
+    suspend fun updateStatus(bookId: String, status: BookStatus, timestamp: Long)
 
     //UPDATE OWNERSHIP
     @Query("UPDATE books SET ownership = :ownership WHERE bookId = :bookId")
@@ -51,6 +57,9 @@ interface BookDao {
 
     @Query("SELECT COUNT(*) FROM books")
     suspend fun getBookCount(): Int
+
+    @Query("UPDATE books SET pageCount = :count WHERE bookId = :bookId")
+    suspend fun updatePageCount(bookId: String, count: Int)
 
     //SELECT BY OWNERSHIP
     @Query("SELECT * FROM books WHERE ownership = :ownership")

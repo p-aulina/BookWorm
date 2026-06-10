@@ -2,6 +2,7 @@ package com.example.bookworm.ui.search
 
 import android.app.appsearch.SearchResult
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -103,30 +104,33 @@ private fun SearchResultCard(
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            if(book.coverURL != null){
-                AsyncImage(
-                    model = book.coverURL,
-                    contentDescription = book.title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(width = 56.dp, height = 80.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(width = 56.dp, height = 80.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = book.title.take(2).uppercase(),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+            Box(modifier = Modifier.size(width = 60.dp, height = 85.dp)) {
+                if (book.coverURL != null) {
+                    AsyncImage(
+                        model = book.coverURL,
+                        contentDescription = book.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(width = 56.dp, height = 80.dp)
+                            .clip(RoundedCornerShape(6.dp))
                     )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(width = 56.dp, height = 80.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = book.title.take(2).uppercase(),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
             Column(modifier = Modifier.weight(1f)) {

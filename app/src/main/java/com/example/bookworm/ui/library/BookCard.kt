@@ -174,10 +174,10 @@ fun BookCard(
 @Composable
 private fun StatusChip(status: BookStatus){
     val(label, containerColor) = when (status){
-        BookStatus.READING -> "Reading" to MaterialTheme.colorScheme.primaryContainer
-        BookStatus.FINISHED -> "Read" to MaterialTheme.colorScheme.secondaryContainer
-        BookStatus.TBR -> "To read" to MaterialTheme.colorScheme.tertiaryContainer
-        BookStatus.DNF -> "Did not finish" to MaterialTheme.colorScheme.tertiaryContainer
+        BookStatus.READING -> status.label to MaterialTheme.colorScheme.primaryContainer
+        BookStatus.FINISHED -> status.label to MaterialTheme.colorScheme.secondaryContainer
+        BookStatus.TBR -> status.label to MaterialTheme.colorScheme.tertiaryContainer
+        BookStatus.DNF -> status.label to MaterialTheme.colorScheme.tertiaryContainer
     }
     SuggestionChip(
         onClick = {},
